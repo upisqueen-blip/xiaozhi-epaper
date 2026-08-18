@@ -569,6 +569,9 @@ choice BOARD_TYPE
     config BOARD_TYPE_AI_VOX3
         bool "NULLLAB-AI-VOX3"
         depends on IDF_TARGET_ESP32S3
+    config BOARD_TYPE_SSD2683ZA_S3_EPD42
+        bool "Custom SSD2683ZA ESP32-S3 4.2-inch ePaper"
+        depends on IDF_TARGET_ESP32S3
 endchoice
 
 choice
