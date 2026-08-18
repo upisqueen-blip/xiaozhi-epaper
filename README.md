@@ -1,6 +1,29 @@
-# An MCP-based Chatbot
+# XiaoZhi ESP32-S3 Dual-Screen E-Paper Terminal
 
 (English | [中文](README_zh.md) | [日本語](README_ja.md))
+
+## Project Overview
+
+This project is an integrated dual-screen e-paper terminal built on ESP32-S3. The
+main board can drive two independent 24-pin e-paper displays (Screen A and Screen
+B), while an optional 24-pin-to-50-pin adapter board adds support for 7-inch
+E Ink E6 panels.
+
+The firmware combines e-paper information display, voice interaction, local
+media storage and smart-home control in one device.
+
+### Product Features
+
+- Independent dual-screen output for two 24-pin e-paper displays
+- 7-inch E Ink E6 panel support through the optional 50-pin adapter board
+- Album, calendar, class schedule, notes, e-book (fast-refresh panel required)
+  and token balance dashboard
+- Remote image delivery and local image playback from a TF/microSD card
+- XiaoZhi voice interaction and audio recording
+- Local Home Assistant integration for LAN-based IoT control
+
+> The e-book experience depends on the refresh speed and waveform support of the
+> connected panel. Hardware combinations should be validated on the target board.
 
 ## Introduction
 
