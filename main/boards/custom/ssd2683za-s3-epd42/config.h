@@ -30,6 +30,14 @@
 #define EPD_BUSY_PIN  GPIO_NUM_12
 #define EPD_BUSY_LEVEL 0
 
+// XKTF-015-G microSD socket, verified from the PCB PAD_NET records.
+// The socket is wired for SDSPI (DAT1/DAT2 are intentionally unused).
+#define SD_SPI_NUM   SPI2_HOST
+#define SD_CS_PIN    GPIO_NUM_1
+#define SD_MISO_PIN  GPIO_NUM_2
+#define SD_SCK_PIN   GPIO_NUM_4
+#define SD_MOSI_PIN  GPIO_NUM_5
+
 #define DISPLAY_WIDTH  400
 #define DISPLAY_HEIGHT 300
 

@@ -46,6 +46,18 @@ The LVGL flush callback only updates a PSRAM framebuffer. A dedicated
 FreeRTOS task coalesces UI changes and performs the slow panel refresh, so
 EPD BUSY waits do not block XiaoZhi audio capture, playback or networking.
 
+## TF card
+
+The onboard XKTF-015-G socket uses a dedicated SDSPI bus: CS GPIO1, MISO GPIO2,
+SCK GPIO4 and MOSI GPIO5. Use FAT16/FAT32 and place media under:
+
+- `/xiaozhi/images`: PNG/JPEG images
+- `/xiaozhi/audio`: mono 16-bit PCM WAV at 24 kHz
+- `/xiaozhi/recordings`: recordings created by the device
+
+The firmware still starts normally if no card is inserted. It never formats a card
+automatically. Media file names are restricted to a single path component.
+
 Verified with ESP-IDF 5.5.2:
 
 ```sh

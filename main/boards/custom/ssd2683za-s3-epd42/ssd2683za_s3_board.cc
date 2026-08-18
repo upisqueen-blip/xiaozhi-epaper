@@ -5,14 +5,19 @@
 #include "codecs/es8311_audio_codec.h"
 #include "config.h"
 #include "mcp_server.h"
+#include "sd_card_storage.h"
 #include "ssd2683za_display.h"
 #include "wifi_board.h"
+#include "lvgl_image.h"
+
+#include <esp_heap_caps.h>
 
 class Ssd2683zaS3Board : public WifiBoard {
 private:
     i2c_master_bus_handle_t i2c_bus_ = nullptr;
     Button boot_button_;
     Ssd2683zaDisplay* display_ = nullptr;
+    SdCardStorage storage_;
 
     void InitializeI2c() {
         i2c_master_bus_config_t config = {};
@@ -79,6 +84,48 @@ private:
                         display_->dashboard().Show(EpaperDashboard::Page::kQuota);
                         return true;
                     });
+        mcp.AddTool("self.storage.status", "查看 TF 卡挂载状态和剩余容量。", PropertyList(),
+                    [this](const PropertyList&) -> ReturnValue { return storage_.Status(); });
+        mcp.AddTool("self.storage.list", "列出 TF 卡文件。category 可选 images、audio、recordings。",
+                    PropertyList({Property("category", kPropertyTypeString)}),
+                    [this](const PropertyList& p) -> ReturnValue {
+                        return storage_.List(p["category"].value<std::string>());
+                    });
+        mcp.AddTool("self.epaper.show_sd_image", "显示 TF 卡 /xiaozhi/images 中的 PNG/JPEG 图片。",
+                    PropertyList({Property("name", kPropertyTypeString)}),
+                    [this](const PropertyList& p) -> ReturnValue {
+                        std::vector<uint8_t> bytes;
+                        std::string error;
+                        if (!storage_.Load("images", p["name"].value<std::string>(), bytes,
+                                           6 * 1024 * 1024, error)) return error;
+                        void* data = heap_caps_malloc(bytes.size(), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+                        if (!data) data = heap_caps_malloc(bytes.size(), MALLOC_CAP_8BIT);
+                        if (!data) return std::string("image memory allocation failed");
+                        memcpy(data, bytes.data(), bytes.size());
+                        try {
+                            display_->SetPreviewImage(std::make_unique<LvglAllocatedImage>(data, bytes.size()));
+                        } catch (...) {
+                            heap_caps_free(data);
+                            return std::string("unsupported or damaged image");
+                        }
+                        return true;
+                    });
+        mcp.AddTool("self.audio.play_sd_wav", "播放 TF 卡 /xiaozhi/audio 中的单声道 16-bit 24kHz PCM WAV。",
+                    PropertyList({Property("name", kPropertyTypeString)}),
+                    [this](const PropertyList& p) -> ReturnValue {
+                        std::string error;
+                        return storage_.PlayWav(GetAudioCodec(), p["name"].value<std::string>(), error)
+                                   ? ReturnValue(true) : ReturnValue(error);
+                    });
+        mcp.AddTool("self.audio.record_sd_wav", "录音到 TF 卡 /xiaozhi/recordings，seconds 为 1~60 秒。",
+                    PropertyList({Property("name", kPropertyTypeString),
+                                  Property("seconds", kPropertyTypeInteger, 1, 60)}),
+                    [this](const PropertyList& p) -> ReturnValue {
+                        std::string error;
+                        return storage_.RecordWav(GetAudioCodec(), p["name"].value<std::string>(),
+                                                  p["seconds"].value<int>(), error)
+                                   ? ReturnValue(true) : ReturnValue(error);
+                    });
     }
 
 public:
@@ -86,6 +133,7 @@ public:
         InitializeI2c();
         InitializeButton();
         display_ = new Ssd2683zaDisplay();
+        storage_.Mount();  // Card absence must never prevent normal voice/display startup.
         InitializeDashboardTools();
     }
 
