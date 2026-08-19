@@ -7,15 +7,19 @@
 #define AUDIO_INPUT_SAMPLE_RATE  24000
 #define AUDIO_OUTPUT_SAMPLE_RATE 24000
 
-// ES8311 pins, verified against Netlist_PCB_Main_2026-08-13.net.
+// ES8311 + NS4150B pins from the "s3单屏幕+外接50pin" schematic.
+// NOTE: the PCB_Main snapshot embedded in the 2026-08-18 .epro2 project does
+// not yet contain the audio components. Update the PCB from the schematic
+// before manufacturing; these audio nets cannot be PCB-verified yet.
 #define AUDIO_CODEC_I2C_SDA_PIN GPIO_NUM_13
 #define AUDIO_CODEC_I2C_SCL_PIN GPIO_NUM_14
 #define AUDIO_I2S_GPIO_MCLK     GPIO_NUM_21
 #define AUDIO_I2S_GPIO_BCLK     GPIO_NUM_18
-#define AUDIO_I2S_GPIO_WS       GPIO_NUM_17
-#define AUDIO_I2S_GPIO_DOUT     GPIO_NUM_16
-#define AUDIO_I2S_GPIO_DIN      GPIO_NUM_15
-#define AUDIO_CODEC_PA_PIN      GPIO_NUM_40
+#define AUDIO_I2S_GPIO_WS       GPIO_NUM_16
+#define AUDIO_I2S_GPIO_DOUT     GPIO_NUM_15
+#define AUDIO_I2S_GPIO_DIN      GPIO_NUM_17
+#define AUDIO_CODEC_PA_PIN      GPIO_NUM_38
+#define AUDIO_CODEC_PA_VOLTAGE  3.3f
 #define AUDIO_CODEC_ES8311_ADDR ES8311_CODEC_DEFAULT_ADDR
 
 #define BOOT_BUTTON_GPIO GPIO_NUM_0
@@ -30,7 +34,7 @@
 #define EPD_BUSY_PIN  GPIO_NUM_12
 #define EPD_BUSY_LEVEL 0
 
-// XKTF-015-G microSD socket, verified from the PCB PAD_NET records.
+// XKTF-015-G microSD socket, verified from both schematic and PCB PAD_NET.
 // The socket is wired for SDSPI (DAT1/DAT2 are intentionally unused).
 #define SD_SPI_NUM   SPI2_HOST
 #define SD_CS_PIN    GPIO_NUM_1

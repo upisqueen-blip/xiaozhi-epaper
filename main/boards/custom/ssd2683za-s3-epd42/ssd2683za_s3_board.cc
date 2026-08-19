@@ -1,4 +1,5 @@
 #include <driver/i2c_master.h>
+#include <esp_log.h>
 
 #include "application.h"
 #include "button.h"
@@ -11,6 +12,10 @@
 #include "lvgl_image.h"
 
 #include <esp_heap_caps.h>
+
+namespace {
+constexpr const char* kTag = "Ssd2683zaS3Board";
+}
 
 class Ssd2683zaS3Board : public WifiBoard {
 private:
@@ -28,6 +33,19 @@ private:
         config.glitch_ignore_cnt = 7;
         config.flags.enable_internal_pullup = 1;
         ESP_ERROR_CHECK(i2c_new_master_bus(&config, &i2c_bus_));
+
+        // esp_codec_dev stores the 8-bit ES8311 address (0x30), while the IDF
+        // probe API expects the corresponding 7-bit address (0x18).
+        const uint8_t address_7bit = AUDIO_CODEC_ES8311_ADDR >> 1;
+        const esp_err_t probe = i2c_master_probe(i2c_bus_, address_7bit, 100);
+        if (probe == ESP_OK) {
+            ESP_LOGI(kTag, "ES8311 detected at I2C address 0x%02X", address_7bit);
+        } else {
+            ESP_LOGE(kTag,
+                     "ES8311 did not acknowledge at 0x%02X (SDA=%d, SCL=%d): %s",
+                     address_7bit, AUDIO_CODEC_I2C_SDA_PIN, AUDIO_CODEC_I2C_SCL_PIN,
+                     esp_err_to_name(probe));
+        }
     }
 
     void InitializeButton() {
@@ -142,7 +160,7 @@ public:
             i2c_bus_, I2C_NUM_0, AUDIO_INPUT_SAMPLE_RATE, AUDIO_OUTPUT_SAMPLE_RATE,
             AUDIO_I2S_GPIO_MCLK, AUDIO_I2S_GPIO_BCLK, AUDIO_I2S_GPIO_WS,
             AUDIO_I2S_GPIO_DOUT, AUDIO_I2S_GPIO_DIN, AUDIO_CODEC_PA_PIN,
-            AUDIO_CODEC_ES8311_ADDR);
+            AUDIO_CODEC_ES8311_ADDR, true, false, AUDIO_CODEC_PA_VOLTAGE);
         return &codec;
     }
 
